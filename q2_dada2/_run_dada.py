@@ -894,8 +894,6 @@ def _resolve_multithread(num_threads: int | None) -> bool | int:
     '''Convert the requested thread count to DADA2's multithread argument.'''
     if num_threads is None:
         return False
-    if num_threads < 0:
-        raise ValueError('Number of threads must be a positive number.')
     if num_threads == 0:
         return True
     return num_threads
