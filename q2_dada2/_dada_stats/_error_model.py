@@ -41,17 +41,22 @@ def _melt_error_matrix(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _error_model_to_dataframe(
-    learned_errors: RObject,
-    nti: tuple[str, ...] = ('A', 'C', 'G', 'T'),
-    nji: tuple[str, ...] = ('A', 'C', 'G', 'T')
+    learned_errors: RObject
 ) -> pd.DataFrame:
-    '''Convert the complete result of DADA2 error learning to statistics.'''
-    acgt = {'A', 'C', 'G', 'T'}
-    if not all(n in acgt for n in nti) or not all(n in acgt for n in nji):
-        raise ValueError('nti and ntj must be nucleotide(s): A/C/G/T.')
-    if len(set(nti)) != len(nti) or len(set(nji)) != len(nji):
-        raise ValueError('nti and ntj must not contain duplicates.')
+    '''
+    Convert a DADA2 error-learning result to base-transition statistics. This
+    function is adapted from `dada2::plotErrors()`.
 
+    Parameters
+    ----------
+    learned_errors : RObject
+        As returned by `dada2::learnErrors()`.
+
+    Returns
+    -------
+    pd.DataFrame
+        Per-transition counts and error rates at each quality score.
+    '''
     detailed_errors = dada2.getErrors(
         learned_errors, detailed=True, enforce=False
     )
