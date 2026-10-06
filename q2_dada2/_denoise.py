@@ -93,6 +93,27 @@ def _check_inputs(**kwargs):
                              % (param, arg, explanation))
 
 
+def _check_truncation_parameters(
+    trunc_len: int,
+    trim_left: int,
+    max_len: Optional[int] = None,
+    read_suffix: str = ''
+) -> None:
+    '''
+    Validate relationship between trim and truncation positions.
+    '''
+    if trunc_len != 0 and trim_left >= trunc_len:
+        raise ValueError(
+            f'The trim_left{read_suffix} parameter ({trim_left}) must be '
+            f'less than the trunc_len{read_suffix} parameter ({trunc_len}).'
+        )
+    if max_len is not None and max_len != 0 and trunc_len > max_len:
+        raise ValueError(
+            f'The trunc_len parameter ({trunc_len}) can not be greater than '
+            f'the max_len parameter ({max_len}).'
+        )
+
+
 def _denoise_helper(results: _Dada2Results, hashed_feature_ids,
                     retain_all_samples, retain_unmerged=False):
     if results.sequence_table.shape[1] == 0:
@@ -221,12 +242,7 @@ def _denoise_single_or_pyro(
     homopolymer_gap_penalty, band_size, retain_all_samples
 ):
     _check_inputs(**locals())
-    if trunc_len != 0 and trim_left >= trunc_len:
-        raise ValueError("trim_left (%r) must be smaller than trunc_len (%r)"
-                         % (trim_left, trunc_len))
-    if max_len != 0 and max_len < trunc_len:
-        raise ValueError("trunc_len (%r) must be no bigger than max_len (%r)"
-                         % (trunc_len, max_len))
+    _check_truncation_parameters(trunc_len, trim_left, max_len)
     # Coerce for single end read analysis
     max_len = 'Inf' if max_len == 0 else max_len
 
@@ -367,12 +383,12 @@ def denoise_paired(demultiplexed_seqs: SingleLanePerSamplePairedEndFastqDirFmt,
                          qiime2.Metadata, qiime2.Metadata):
     _check_inputs(**locals())
 
-    if trunc_len_f != 0 and trim_left_f >= trunc_len_f:
-        raise ValueError("trim_left_f (%r) must be smaller than trunc_len_f"
-                         " (%r)" % (trim_left_f, trunc_len_f))
-    if trunc_len_r != 0 and trim_left_r >= trunc_len_r:
-        raise ValueError("trim_left_r (%r) must be smaller than trunc_len_r"
-                         " (%r)" % (trim_left_r, trunc_len_r))
+    _check_truncation_parameters(
+        trunc_len_f, trim_left_f, read_suffix='_f'
+    )
+    _check_truncation_parameters(
+        trunc_len_r, trim_left_r, read_suffix='_r'
+    )
 
     with tempfile.TemporaryDirectory() as temp_dir_name:
         temp_dir = Path(temp_dir_name)
@@ -469,12 +485,7 @@ def denoise_ccs(demultiplexed_seqs: SingleLanePerSampleSingleEndFastqDirFmt,
                 ) -> (biom.Table, DNAIterator,
                       qiime2.Metadata, qiime2.Metadata):
     _check_inputs(**locals())
-    if trunc_len != 0 and trim_left >= trunc_len:
-        raise ValueError("trim_left (%r) must be smaller than trunc_len (%r)"
-                         % (trim_left, trunc_len))
-    if max_len != 0 and max_len < trunc_len:
-        raise ValueError("trunc_len (%r) must be no bigger than max_len (%r)"
-                         % (trunc_len, max_len))
+    _check_truncation_parameters(trunc_len, trim_left, max_len)
     # Coerce for ccs read analysis
     max_len = 'Inf' if max_len == 0 else max_len
 
