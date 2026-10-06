@@ -36,17 +36,6 @@ from q2_dada2._run_dada import (
     _resolve_multithread,
 )
 
-
-def _check_featureless_table(fp):
-    with open(fp) as fh:
-        # There is a comment line and a header before the feature data
-        for line_count, _ in zip(range(1, 3), fh):
-            pass
-    if line_count < 2:
-        raise ValueError("No features remain after denoising. Try adjusting "
-                         "your truncation and trim parameter settings.")
-
-
 _WHOLE_NUM = (lambda x: x >= 0, 'non-negative')
 _NAT_NUM = (lambda x: x > 0, 'greater than zero')
 _POOL_STR = (lambda x: x in {'pseudo', 'independent'},
