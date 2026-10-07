@@ -988,10 +988,7 @@ def _remove_chimeras(
         R sequence table after chimera removal, or the unchanged sequence
         table when chimera removal is skipped.
     '''
-    if (
-        chimera_method not in {'pooled', 'consensus'}
-        or sequence_table.ncol == 0
-    ):
+    if chimera_method == 'none' or sequence_table.ncol == 0:
         return sequence_table
 
     return dada2.removeBimeraDenovo(
